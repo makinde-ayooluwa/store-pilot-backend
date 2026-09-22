@@ -20,7 +20,7 @@ const register = async (req, res) => {
             return res.status(500).json({ statusCode: 500, message: "User exists" });
         }
         const newUser = await User.create({ fullname, email, password, role });
-        return res.status(200).json({ statusCode: 200, _id: newUser._id });
+        return res.status(200).json({ statusCode: 200, _id: newUser._id, message: "User registered successfully" });
     } catch (error) {
         res.status(500).json({ statusCode: 500, message: error })
         console.log(error);
@@ -29,4 +29,13 @@ const register = async (req, res) => {
 const login = (req, res) => {
 
 }
-module.exports = { register, login }
+const getUser = async (req, res) => {
+    try {
+        const { id } = req.body;
+        const user = await User.findById(id);
+        res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+    }
+}
+module.exports = { register, login, getUser }
