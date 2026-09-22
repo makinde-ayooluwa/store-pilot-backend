@@ -1,9 +1,11 @@
 const express = require("express")
 const app = express();
 const authRouter = require("./routes/auth.routes")
+const cors = require("cors")
 
 app.use(express.json())
 app.use("/uploads", express.static("./uploads"));
+app.use(cors())
 
 app.get("/", (req, res) => {
     res.status(200).json({ status: true })
