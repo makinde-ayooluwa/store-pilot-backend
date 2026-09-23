@@ -22,7 +22,7 @@ const register = async (req, res) => {
         const newUser = await User.create({ fullname, email, password, role });
         return res.status(200).json({ statusCode: 200, _id: newUser._id, message: "User registered successfully" });
     } catch (error) {
-        res.status(500).json({ statusCode: 500, message: error })
+        res.status(500).json({ statusCode: 500, message: "Internal server error" })
         console.log(error);
     }
 }
