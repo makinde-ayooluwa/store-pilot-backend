@@ -1,7 +1,7 @@
 const { WebSocketServer } = require("ws");
 
 const socket = new WebSocketServer({
-    port: 5000
+    port: process.env.SOCKET_PORT || 5000
 });
 
 console.log("WebSocket server running on port 5000");

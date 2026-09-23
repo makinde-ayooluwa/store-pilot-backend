@@ -2,6 +2,7 @@ const express = require("express")
 const app = express();
 const authRouter = require("./routes/auth.routes")
 const cors = require("cors")
+const job = require("./config/cron")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
@@ -14,4 +15,5 @@ app.get("/", (req, res) => {
 })
 app.use("/auth", authRouter);
 
+job.start()
 module.exports = app;
