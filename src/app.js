@@ -1,6 +1,7 @@
 const express = require("express")
 const app = express();
 const authRouter = require("./routes/auth.routes")
+const mailRouter = require("./routes/mailer.routes")
 const cors = require("cors")
 const job = require("./config/cron")
 
@@ -14,6 +15,7 @@ app.get("/", (req, res) => {
     console.log("Request made to /")
 })
 app.use("/auth", authRouter);
+app.use("/mail", mailRouter);
 
 job.start()
 module.exports = app;

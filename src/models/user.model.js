@@ -8,7 +8,7 @@ const userSchema = new Schema(
         password: String,
         role: {
             type: String,
-            enum: ['user', 'admin', 'seller'], // Only allows values in this list
+            enum: ['user', 'admin'], // Only allows values in this list
             default: 'user'                   // Defaults to 'user' if no role is provided
         },
         picture: String,
@@ -20,7 +20,10 @@ const userSchema = new Schema(
             type: Boolean,
             default: false
         },
-        lastLogin: Date
+        lastLogin: {
+            type: Date,
+            default: Date
+        }
     },
     { timestamps: true }
 )
@@ -34,5 +37,9 @@ userSchema.pre("save", async function (next) {
 
     // next();
 });
+userSchema.methods.confirmPassword = async function (password) {
+    const valid = await bcrypt.compare(password, this.password);
+    return valid;
+};
 const User = mongoose.model("users", userSchema);
 module.exports = User;

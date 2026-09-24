@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/makinde-ayooluwa/store-pilot-backend#readme",
   "dependencies": {
+    "axios": "^1.20.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "cron": "^4.4.0",
@@ -28,6 +29,7 @@
     "express": "^5.2.1",
     "mongoose": "^9.8.1",
     "multer": "^2.4.0",
+    "nodemailer": "^10.0.10",
     "nodemon": "^3.1.14",
     "ws": "^8.21.3"
   }
