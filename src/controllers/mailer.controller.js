@@ -1,7 +1,8 @@
 const mailer = require("../middleware/mailer");
 const Mail = require("../models/mail.model");
 
-const sendMail = async (subject, to, message) => {
+const send = async (req, res) => {
+  const {subject, to, message} = req.body;
   // 1. Await nodemailer dispatch so errors bubble up to controller
   const info = await mailer.sendMail({
     to: to,
@@ -13,7 +14,7 @@ const sendMail = async (subject, to, message) => {
   await Mail.create({ to, message, subject });
 
   // 3. Return confirmation object to the calling controller
-  return { success: true, info };
+  return res.status(200).json({ success: true, info });
 };
 
-module.exports = { sendMail };
+module.exports = { send };

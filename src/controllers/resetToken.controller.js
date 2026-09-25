@@ -1,10 +1,12 @@
 const ResetToken = require("../models/resetToken.model")
-const requestToken = async (userId) => {
+const requestToken = async (req, res) => {
     const token = "RSTK-" + Math.floor(Math.random() * 23112010);
+    const {userId} = req.body;
     await ResetToken.create({ userId, token })
     return {
         userId,
-        token
+        token,
+        status: true
     }
 }
 const validateToken = async (req, res) => {
