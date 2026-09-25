@@ -48,7 +48,7 @@ const login = async (req, res) => {
             return res.status(401).json({ statusCode: 401, message: "Invalid email or incorrect password" });
         }
     } catch (error) {
-        res.status(500).json({ statusCode: 500, message: "Internal server error" })
+        res.status(500).json({ statusCode: 500, message: "Internal server error." })
         console.log(error);
     }
 }
