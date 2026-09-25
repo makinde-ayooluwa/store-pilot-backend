@@ -3,11 +3,11 @@ const requestToken = async (req, res) => {
     const token = "RSTK-" + Math.floor(Math.random() * 23112010);
     const {userId} = req.body;
     await ResetToken.create({ userId, token })
-    return {
+    return res.status(200).json({
         userId,
         token,
         status: true
-    }
+    })
 }
 const validateToken = async (req, res) => {
     try {

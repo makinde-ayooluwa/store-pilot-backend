@@ -54,7 +54,7 @@ const login = async (req, res) => {
 }
 const forgotPassword = async (req, res) => {
     try {
-        const { email, to } = req.body;
+        const { email } = req.body;
 
         if (!email) {
             return res.status(400).json({ statusCode: 400, message: "Email is required" });
@@ -62,46 +62,52 @@ const forgotPassword = async (req, res) => {
 
         // 1. Use findOne instead of find (returns an object, not an array)
         const user = await User.findOne({ email });
-
-        // 2. Return a uniform message regardless of whether user exists (prevents account enumeration)
-        if (!user) {
-            return res.status(200).json({
-                statusCode: 200,
-                message: "If an account with that email exists, a password reset link has been sent.",
-                userId: user._id
-            });
-        }
-
-    //     // 5. Await email dispatch
-    //     await sendMail(subject, to, message);
-
-    //     // 6. Send success response back to Express client
-    //     return res.status(200).json({
-    //         status: true,
-    //         statusCode: 200,
-    //         message: "If an account with that email exists, a password reset link has been sent.",
-    //     });
+        return res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: "If an account with that email exists, a password reset link has been sent.",
+            userId: user._id
+        });
     } catch (error) {
         console.error("FORGOT PASSWORD ERROR:", error);
         return res.status(500).json({
+            status: false,
             statusCode: 500,
             message: "An internal server error occurred while sending the email.",
         });
     }
 };
 const resetPassword = async (req, res) => {
-    const { password, userId } = req.body;
-    const updated = await User.findByIdAndUpdate(userId, { password });
-    if (updated) {
-        res.status(200).json({
-            status: true
-        })
-    } else {
-        res.status(500).json({
-            status: false
-        })
+    try {
+        const { password, userId } = req.body;
+
+        // 1. Find the user document
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: "User not found"
+            });
+        }
+
+        // 2. Assign the new password (triggering pre('save') middleware)
+        user.password = password;
+        await user.save();
+
+        // 3. (Optional) Delete used reset tokens here so they can't be reused
+
+        return res.status(200).json({
+            status: true,
+            message: "Password updated successfully"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: "Server error"
+        });
     }
-}
+};
 const getUser = async (req, res) => {
     try {
         const { id } = req.body;

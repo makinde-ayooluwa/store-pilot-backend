@@ -14,7 +14,7 @@ const send = async (req, res) => {
   await Mail.create({ to, message, subject });
 
   // 3. Return confirmation object to the calling controller
-  return res.status(200).json({ success: true, info });
+  return res.status(200).json({ status: true, info });
 };
 
 module.exports = { send };
