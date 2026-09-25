@@ -39,6 +39,7 @@ const login = async (req, res) => {
 
             // 2. Use status code 401 (Unauthorized) for bad credentials, not 500
             if (!isMatch) {
+                
                 return res.status(401).json({ statusCode: 401, message: "Invalid email or password" });
             }
 
