@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const { requestToken } = require("./resetToken.controller");
-const { sendMail } = require("./mailer.controller")
+const { sendMail } = require("./mailer.controller");
+const Store = require("../models/store.model");
 const register = async (req, res) => {
     try {
         const { fullname, email, password, role } = req.body;
@@ -39,7 +40,7 @@ const login = async (req, res) => {
 
             // 2. Use status code 401 (Unauthorized) for bad credentials, not 500
             if (!isMatch) {
-                
+
                 return res.status(401).json({ statusCode: 401, message: "Invalid email or password" });
             }
 
@@ -52,6 +53,14 @@ const login = async (req, res) => {
         res.status(500).json({ statusCode: 500, message: "Internal server error." })
         console.log(error);
     }
+}
+const checkStore = async (req, res) => {
+    const { id, email } = req.body;
+    const exists = await Store.findOne({ ownerEmail: email })
+    if (!exists) {
+        return res.status(500).json({ status: false })
+    }
+    return res.status(200).json({ status: true })
 }
 const forgotPassword = async (req, res) => {
     try {
@@ -118,4 +127,4 @@ const getUser = async (req, res) => {
         console.log(error);
     }
 }
-module.exports = { register, login, getUser, forgotPassword, resetPassword }
+module.exports = { checkStore, register, login, getUser, forgotPassword, resetPassword }
