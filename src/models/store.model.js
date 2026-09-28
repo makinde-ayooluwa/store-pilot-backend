@@ -10,7 +10,8 @@ const storeSchema = new Schema({
     phone: String,
     category: String,
     location: String,
-    description: String
+    description: String,
+    categories: Array
 }, { timestamps: true })
 
 const Store = new mongoose.model("stores", storeSchema);
