@@ -4,6 +4,8 @@ const authRouter = require("./routes/auth.routes")
 const mailRouter = require("./routes/mailer.routes")
 const wishlistRouter = require("./routes/wishlist.routes")
 const storeRouter = require("./routes/store.routes")
+const productRouter = require("./routes/product.routes")
+const categoryRouter = require("./routes/category.routes")
 const cors = require("cors")
 const job = require("./config/cron")
 app.use((req, res, next) => {
@@ -28,6 +30,8 @@ app.use("/auth", authRouter);
 app.use("/mail", mailRouter);
 app.use("/wishlist", wishlistRouter);
 app.use("/store", storeRouter);
+app.use("/products", productRouter);
+app.use("/categories", categoryRouter);
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });

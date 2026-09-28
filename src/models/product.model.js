@@ -9,13 +9,15 @@ const productSchema = new Schema({
     image: String,
     images: Array,
     category: String,
-    categorySlug: String,
+    // categorySlug: String,
     store: String,
-    storeSlug: String,
+    // storeSlug: String,
     rating: Number,
     reviews: Number,
     stock: Number,
-    featured: Boolean
+    lowStockThreshold: Number,
+    featured: Boolean,
+    status: String
 }, { timestamps: true })
 const Product = new mongoose.model("products", productSchema)
 module.exports = Product;
