@@ -90,7 +90,7 @@ const addProduct = async (req, res) => {
             price,
             stock,
             lowStockThreshold,
-            status,
+            status: status ?? "active",
             image: images[0],
             images,
             store
@@ -105,7 +105,11 @@ const addProduct = async (req, res) => {
          * Add product
          */
     } catch (error) {
-
+        return res.status(500).json({
+            status: true,
+            message: "Product error",
+            data: error
+        });
     }
 }
 module.exports = { getAllProduct, addProduct }
