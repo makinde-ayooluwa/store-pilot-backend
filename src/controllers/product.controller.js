@@ -18,7 +18,7 @@ const addProduct = async (req, res) => {
             price,
             stock,
             lowStockThreshold,
-            status, store
+            status, store, storeName, storeSlug
         } = req.body;
 
         if (!name || !name.trim()) {
@@ -42,12 +42,12 @@ const addProduct = async (req, res) => {
             });
         }
 
-        if (!category) {
-            return res.status(400).json({
-                status: false,
-                message: "Product category is required"
-            });
-        }
+        // if (!category) {
+        //     return res.status(400).json({
+        //         status: false,
+        //         message: "Product category is required"
+        //     });
+        // }
 
         if (price === undefined || price === null || price === "") {
             return res.status(400).json({
@@ -74,14 +74,27 @@ const addProduct = async (req, res) => {
             });
         }
 
-        if (!status || !status.trim()) {
+        if (status.trim() == "") {
             return res.status(400).json({
                 status: false,
                 message: "Product status is required"
             });
         }
+        const exists = await Product.findOne({ slug });
+        if (exists) {
+            return res.status(400).json({
+                status: false,
+                message: "Product with the slug exists already."
+            });
+        }
         const images = req.files;
-        console.log(images)
+        // console.log(images)
+        const imagesToAdd = []
+        images.forEach(({ path }) => {
+            imagesToAdd.push(path)
+        })
+        console.log(imagesToAdd)
+        console.log(imagesToAdd)
         const newProduct = await Product.create({
             name,
             slug,
@@ -91,9 +104,11 @@ const addProduct = async (req, res) => {
             stock,
             lowStockThreshold,
             status: status ?? "active",
-            image: images[0],
-            images,
-            store
+            image: `${images[0].path}`,
+            images: imagesToAdd,
+            store,
+            storeName,
+            storeSlug
         })
         return res.status(200).json({
             status: true,
@@ -107,7 +122,7 @@ const addProduct = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             status: true,
-            message: "Product error",
+            message: "Product error occured",
             data: error
         });
     }
