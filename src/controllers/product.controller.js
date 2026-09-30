@@ -18,7 +18,10 @@ const addProduct = async (req, res) => {
             price,
             stock,
             lowStockThreshold,
-            status, store, storeName, storeSlug
+            status, 
+            store, 
+            storeName,
+             storeSlug
         } = req.body;
 
         if (!name || !name.trim()) {

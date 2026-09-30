@@ -1,5 +1,14 @@
+const Product = require("../models/product.model");
 const Store = require("../models/store.model");
 const User = require("../models/user.model");
+const getAllStore = async(req, res)=>{
+   try {
+     const response = await Store.find();
+     res.status(200).json(response);
+   } catch (error) {
+    res.status(500).json({status:false, message: "Stores not found"})
+   }
+}
 const getStore = async (req, res) => {
     try {
         const { id } = req.body;
@@ -30,6 +39,15 @@ const getStore = async (req, res) => {
         });
     }
 };
+const getProducts = async(req, res)=>{
+    const {id} = req.body;
+    try {
+        const products = await Product.find({store: id});
+        res.status(200).json({status: true, data: products});
+    } catch (error) {
+        res.status(500).json({status: false, message: "Failed to fetch store products"})
+    }
+}
 const registerStore = async (req, res) => {
     try {
         const {
@@ -87,4 +105,4 @@ const registerStore = async (req, res) => {
         });
     }
 };
-module.exports = { registerStore, getStore }
+module.exports = { registerStore, getStore, getAllStore, getProducts }

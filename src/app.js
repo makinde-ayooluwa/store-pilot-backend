@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express();
+const path = require("path")
 const authRouter = require("./routes/auth.routes")
 const mailRouter = require("./routes/mailer.routes")
 const wishlistRouter = require("./routes/wishlist.routes")
@@ -14,8 +15,7 @@ app.use((req, res, next) => {
 });
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static("./uploads"));
-
+app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cors())
 
 app.get("/", (req, res) => {
