@@ -11,7 +11,13 @@ const storeSchema = new Schema({
     category: String,
     location: String,
     description: String,
-    categories: Array
+    categories: Array,
+    address: String,
+    currency: String,
+    verified: Boolean,
+    country: String,
+    city: String,
+    state: String
 }, { timestamps: true })
 
 const Store = new mongoose.model("stores", storeSchema);
