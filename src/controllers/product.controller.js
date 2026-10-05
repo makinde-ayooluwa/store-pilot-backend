@@ -18,10 +18,10 @@ const addProduct = async (req, res) => {
             price,
             stock,
             lowStockThreshold,
-            status, 
-            store, 
+            status,
+            store,
             storeName,
-             storeSlug
+            storeSlug
         } = req.body;
 
         if (!name || !name.trim()) {
@@ -115,7 +115,10 @@ const addProduct = async (req, res) => {
         })
         return res.status(200).json({
             status: true,
-            message: "Product created successfully"
+            message: "Product created successfully",
+            data: {
+                _id: newProduct._id
+            }
         });
         /**
          * Handle Images uploads
@@ -124,10 +127,70 @@ const addProduct = async (req, res) => {
          */
     } catch (error) {
         return res.status(500).json({
-            status: true,
+            status: false,
             message: "Product error occured",
             data: error
         });
     }
 }
-module.exports = { getAllProduct, addProduct }
+const editProduct = async (req, res) => {
+    try {
+        const { _id, name, description, price, stock, slug, status } = req.body;
+        const images = req.files;
+        // console.log(images)
+        const imagesToAdd = []
+        images.forEach(({ path }) => {
+            imagesToAdd.push(path)
+        })
+        const updated = await Product.findByIdAndUpdate(
+            _id,
+            {
+                name,
+                description,
+                price,
+                stock,
+                slug,
+                status,
+                image: imagesToAdd?.[0], // Safe access in case array is empty/undefined
+                images: imagesToAdd
+            },
+            {
+                new: true,          // Returns the updated document instead of the old one
+                runValidators: true // Enforces model schema validations (e.g., min price, required fields)
+            }
+        );
+        return res.status(200).json({
+            status: true,
+            message: "Product edited successfully",
+            data: {
+                _id: updated._id
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: "Product editing error occured",
+            data: error
+        });
+    }
+}
+const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.body;
+        const deleted = await Product.findByIdAndDelete(id)
+        if (deleted) {
+            return res.status(200).json({
+                status: true,
+                message: "Product deleted successfully",
+
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: "Product deletion error occured",
+            data: error
+        });
+    }
+}
+module.exports = { getAllProduct, addProduct, editProduct, deleteProduct }
