@@ -1,20 +1,20 @@
 const Product = require("../models/product.model");
 const Store = require("../models/store.model");
 const User = require("../models/user.model");
-const getAllStore = async(req, res)=>{
-   try {
-     const response = await Store.find();
-     res.status(200).json(response);
-   } catch (error) {
-    res.status(500).json({status:false, message: "Stores not found"})
-   }
+const getAllStore = async (req, res) => {
+    try {
+        const response = await Store.find();
+        res.status(200).json(response);
+    } catch (error) {
+        res.status(500).json({ status: false, message: "Stores not found" })
+    }
 }
 const getStore = async (req, res) => {
     try {
         const { id } = req.body;
         const storeOwner = await User.findById(id);
         if (storeOwner) {
-            const store = await Store.find({ownerEmail: storeOwner.email});
+            const store = await Store.find({ ownerEmail: storeOwner.email });
 
             if (!store) {
                 return res.status(404).json({
@@ -39,13 +39,13 @@ const getStore = async (req, res) => {
         });
     }
 };
-const getProducts = async(req, res)=>{
-    const {id} = req.body;
+const getProducts = async (req, res) => {
+    const { id } = req.body;
     try {
-        const products = await Product.find({store: id});
-        res.status(200).json({status: true, data: products});
+        const products = await Product.find({ store: id });
+        res.status(200).json({ status: true, data: products });
     } catch (error) {
-        res.status(500).json({status: false, message: "Failed to fetch store products"})
+        res.status(500).json({ status: false, message: "Failed to fetch store products" })
     }
 }
 const registerStore = async (req, res) => {
@@ -105,4 +105,38 @@ const registerStore = async (req, res) => {
         });
     }
 };
-module.exports = { registerStore, getStore, getAllStore, getProducts }
+const updateStore = async (req, res) => {
+    try {
+        const { _id, name, category, location, description, address, currency, country, city, state } = req.body;
+        const updated = await Store.findByIdAndUpdate(_id, {
+            name,
+            category,
+            location,
+            description,
+            address,
+            currency,
+            city,
+            country,
+            state
+        })
+        if (updated) {
+            return res.status(200).json({
+                status: true,
+                message: "Store updated successfully"
+            });
+        } else {
+            return res.status(400).json({
+                status: false,
+                message: "Store update failed"
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error occured while updating store."
+        });
+    }
+}
+
+module.exports = { registerStore, getStore, getAllStore, getProducts, updateStore }
