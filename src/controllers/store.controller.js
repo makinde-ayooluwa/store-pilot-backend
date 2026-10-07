@@ -62,11 +62,11 @@ const registerStore = async (req, res) => {
         } = req.body;
 
         // 1. Check if the user already owns a store (Return 400 instead of 500)
-        const exists = await Store.findOne({ ownerEmail: email });
+        const exists = await Store.findOne({ ownerEmail: email, slug });
         if (exists) {
             return res.status(400).json({
                 status: false,
-                message: "You already own a store. Login instead"
+                message: "A store with the name already exists or you own a store already. Login instead"
             });
         }
 
@@ -107,36 +107,83 @@ const registerStore = async (req, res) => {
 };
 const updateStore = async (req, res) => {
     try {
-        const { _id, name, category, location, description, address, currency, country, city, state } = req.body;
-        const updated = await Store.findByIdAndUpdate(_id, {
+        const {
+            _id,
             name,
             category,
             location,
             description,
             address,
             currency,
-            city,
             country,
+            city,
             state
-        })
-        if (updated) {
-            return res.status(200).json({
-                status: true,
-                message: "Store updated successfully"
-            });
-        } else {
+        } = req.body;
+
+        if (!_id) {
             return res.status(400).json({
                 status: false,
-                message: "Store update failed"
+                message: "Store ID is required."
             });
         }
 
+        const updateData = {
+            name,
+            category,
+            location,
+            description,
+            address,
+            currency,
+            country,
+            city,
+            state
+        };
+
+        // Uploaded files
+        if (req.files && req.files.length > 0) {
+            console.log("UPLOADED IMAGES:", req.files);
+
+            // First image = logo
+            if (req.files[0]) {
+                updateData.logo = req.files[0].path;
+            }
+
+            // Second image = banner
+            if (req.files[1]) {
+                updateData.banner = req.files[1].path;
+            }
+        }
+
+        const updated = await Store.findByIdAndUpdate(
+            _id,
+            updateData ,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updated) {
+            return res.status(404).json({
+                status: false,
+                message: "Store not found."
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Store updated successfully",
+            data: updated
+        });
+
     } catch (error) {
+        console.error("UPDATE STORE ERROR:", error);
+
         return res.status(500).json({
             status: false,
-            message: "Internal server error occured while updating store."
+            message: "Internal server error occurred while updating store."
         });
     }
-}
+};
 
 module.exports = { registerStore, getStore, getAllStore, getProducts, updateStore }
