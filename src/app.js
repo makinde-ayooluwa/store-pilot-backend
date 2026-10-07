@@ -13,25 +13,19 @@ app.use((req, res, next) => {
     console.log(`Incoming request: ${req.method} ${req.url}`);
     next();
 });
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
 app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
 
-    // Your production Vercel frontend
-    "https://store-pilot-kappa.vercel.app",
-
-    // Your custom domain if you have one
-    // "https://storepilot.com",
+    // Add your Vercel frontend here
+    "https://store-pilot-kappa.vercel.app"
 ];
 
 app.use(
     cors({
         origin: function (origin, callback) {
-            // Allow requests with no origin
-            // e.g. Postman, server-to-server requests
+            // Allow requests without an Origin header
             if (!origin) {
                 return callback(null, true);
             }
@@ -40,9 +34,9 @@ app.use(
                 return callback(null, true);
             }
 
-            return callback(
-                new Error(`CORS blocked for origin: ${origin}`)
-            );
+            console.log("CORS blocked:", origin);
+
+            return callback(new Error("Not allowed by CORS"));
         },
 
         methods: [
@@ -62,6 +56,9 @@ app.use(
         credentials: true
     })
 );
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
     res.status(200).json({ status: true })
