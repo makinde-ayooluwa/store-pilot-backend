@@ -135,30 +135,71 @@ const addProduct = async (req, res) => {
 }
 const editProduct = async (req, res) => {
     try {
-        const { _id, name, description, price, stock, slug, status } = req.body;
-        const images = req.files;
-        // console.log(images)
-        const imagesToAdd = []
-        images.forEach(({ path }) => {
-            imagesToAdd.push(path)
-        })
+        const {
+            _id,
+            name,
+            description,
+            price,
+            stock,
+            slug,
+            status
+        } = req.body;
+
+        if (!_id) {
+            return res.status(400).json({
+                status: false,
+                message: "Product ID is required"
+            });
+        }
+
+        const updateData = {};
+
+        // Only update values that were actually provided
+        if (name !== undefined) updateData.name = name;
+        if (description !== undefined) updateData.description = description;
+        if (price !== undefined) updateData.price = price;
+        if (stock !== undefined) updateData.stock = stock;
+        if (slug !== undefined) updateData.slug = slug;
+        if (status !== undefined) updateData.status = status;
+
+        // Handle images only when new images were uploaded
+        const images = req.files || [];
+
+        if (images.length > 0) {
+            const imagesToAdd = [];
+
+            images.forEach(({ path }) => {
+                imagesToAdd.push(path);
+            });
+
+            updateData.image = imagesToAdd[0];
+            updateData.images = imagesToAdd;
+        }
+
+        // Don't make a database request if nothing was provided
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: "No values provided for update"
+            });
+        }
+
         const updated = await Product.findByIdAndUpdate(
             _id,
+            updateData,
             {
-                name,
-                description,
-                price,
-                stock,
-                slug,
-                status,
-                image: imagesToAdd?.[0], // Safe access in case array is empty/undefined
-                images: imagesToAdd
-            },
-            {
-                new: true,          // Returns the updated document instead of the old one
-                runValidators: true // Enforces model schema validations (e.g., min price, required fields)
+                new: true,
+                runValidators: true
             }
         );
+
+        if (!updated) {
+            return res.status(404).json({
+                status: false,
+                message: "Product not found"
+            });
+        }
+
         return res.status(200).json({
             status: true,
             message: "Product edited successfully",
@@ -166,14 +207,17 @@ const editProduct = async (req, res) => {
                 _id: updated._id
             }
         });
+
     } catch (error) {
+        console.error("PRODUCT EDIT ERROR:", error);
+
         return res.status(500).json({
             status: false,
             message: "Product editing error occured",
             data: error
         });
     }
-}
+};
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.body;
