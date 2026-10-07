@@ -141,6 +141,7 @@ const editProduct = async (req, res) => {
             description,
             price,
             stock,
+            lowStockThreshold,
             slug,
             status
         } = req.body;
@@ -159,6 +160,7 @@ const editProduct = async (req, res) => {
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
         if (stock !== undefined) updateData.stock = stock;
+        if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
         if (slug !== undefined) updateData.slug = slug;
         if (status !== undefined) updateData.status = status;
 
