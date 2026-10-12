@@ -12,10 +12,18 @@ const storeSchema = new Schema({
     location: String,
     description: String,
     categories: Array,
-    address: String,
-    currency: String,
-    verified: Boolean,
-    country: String,
+    currency: {
+        type: String,
+        default: "NGN"
+    },
+    verified: {
+        type: Boolean,
+        default: false
+    },
+    country: {
+        type: String,
+        default: "Nigeria"
+    },
     city: String,
     state: String
 }, { timestamps: true })
