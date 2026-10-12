@@ -1,5 +1,5 @@
 const Cart = require("../models/cart.model");
-
+const User = require("../models/user.model")
 const addToCart = async(req, res)=>{
     try {
         const {user, items} = req.body;
@@ -7,6 +7,13 @@ const addToCart = async(req, res)=>{
             return res.status(400).json({
                 status: false,
                 message: "User ID is required"
+            })
+        }
+        const userExists = await User.findById(user);
+        if(!userExists){
+            return res.status(400).json({
+                status: false,
+                message: "User ID not recognized"
             })
         }
         if(items.length < 1){
