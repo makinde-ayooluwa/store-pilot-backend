@@ -8,7 +8,7 @@ console.log("WebSocket server running on port 5000");
 
 socket.on("connection", (client) => {
     client.on("message", (message) => {
-        const parsed = JSON.parse(message);
+        const parsed = JSON.parse(message) ?? message;
         if (parsed.type == "join") {
             clients[parsed.userId] = client;
             console.log(`User ${parsed.userId} is online now`);

@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
       case "image/png":
       case "image/webp":
       case "image/gif":
+      case "image/jpg":
         folder += "/images";
         break;
 
