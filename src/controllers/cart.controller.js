@@ -28,30 +28,30 @@ const addToCart = async (req, res) => {
 
         // Check if user already has a cart
         let cart = await Cart.findOne({ user });
-        
+
         if (cart) {
             console.log("Full cart", cart)
             // FIX: Convert cItem._id to string to avoid MongoDB object vs JSON string type mismatch
             const existingItem = cart.items.find(cItem => cItem._id == item._id);
 
             if (existingItem) {
-    console.log(`Found existing one`, existingItem._id);
-    // 1. Update the quantity
-    existingItem.quantity += (item.quantity || 1); 
-    
-    // FIX: Tell Mongoose explicitly that the 'items' array was updated
-    cart.markModified('items'); 
-} else {
-    // If it doesn't exist, add the new item to the cart with a fallback quantity
-    cart.items.push({ ...item, quantity: item.quantity || 1 });
-}
+                console.log(`Found existing one`, existingItem._id);
+                // 1. Update the quantity
+                existingItem.quantity += (item.quantity || 1);
 
-// This will now successfully write the new quantity to the database
-await cart.save(); 
+                // FIX: Tell Mongoose explicitly that the 'items' array was updated
+                cart.markModified('items');
+            } else {
+                // If it doesn't exist, add the new item to the cart with a fallback quantity
+                cart.items.push({ ...item, quantity: item.quantity || 1 });
+            }
 
-            
+            // This will now successfully write the new quantity to the database
+            await cart.save();
+
+
             // Single save call for either branch
-            await cart.save(); 
+            await cart.save();
 
         } else {
             // Create a new cart if one doesn't exist
@@ -62,7 +62,7 @@ await cart.save();
                 ]
             });
         }
-        
+
         return res.status(200).json({
             status: true,
             message: "Added to cart successfully",
@@ -116,7 +116,60 @@ const getCart = async (req, res) => {
         });
     }
 }
-const updateQuantity = (req, res)=>{
-    
+const updateQuantity = async (req, res) => {
+    try {
+        const { productId, quantity } = req.body;
+        const updated = await Cart.findByIdAndUpdate(productId, {
+            quantity
+        });
+        return res.status(200).json({
+            status: true,
+            message: "Quantity updated"
+        })
+    } catch (error) {
+return res.status(400).json({
+            status: false,
+            message: "Error occured while updating quantity"
+        })
+    }
 }
-module.exports = { addToCart, getCart }
+const removeFromCart = async(req, res)=>{
+    try {
+        const {user, productId} = req.body;
+        const seen = await Cart.findOne({user});
+        if(seen){
+            const newItems = seen.items.filter((x)=>x._id != productId);
+            seen.items = newItems;
+            await seen.save();
+            return res.status(200).json({
+            status: true,
+            message: "Product removed from cart"
+        })
+        }
+    } catch (error) {
+        return res.status(400).json({
+            status: false,
+            message: "Error occured while removing product from cart"
+        })
+    }
+}
+const clearCart = async(req, res)=>{
+const {user} = req.body;
+try {
+    const seen = await Cart.findOne({user});
+    if(seen){
+        seen.items = [];
+        seen.save();
+    }
+    return res.status(200).json({
+            status: true,
+            message: "Cart cleared successfully"
+        })
+} catch (error) {
+    return res.status(400).json({
+            status: false,
+            message: "Error occured while removing product from cart"
+        })
+}
+}
+module.exports = { addToCart, getCart, updateQuantity, removeFromCart }
