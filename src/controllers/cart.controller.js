@@ -2,7 +2,7 @@ const Cart = require("../models/cart.model");
 const User = require("../models/user.model")
 const addToCart = async (req, res) => {
     try {
-        const { user, items } = req.body;
+        const { user, item } = req.body;
 
         if (!user || user.trim() === "") {
             return res.status(400).json({
@@ -19,28 +19,50 @@ const addToCart = async (req, res) => {
             });
         }
 
-        if (!items || items.length < 1) {
+        if (!item || !item._id) {
             return res.status(400).json({
                 status: false,
-                message: "Cart items can't be empty"
+                message: "Cart item and valid item ID are required"
             });
         }
 
         // Check if user already has a cart
         let cart = await Cart.findOne({ user });
-
+        
         if (cart) {
-            // Append new items to existing cart items array 
-            // (Ensure your schema field matches: 'items' or 'item')
-            items.forEach((item) => cart.items.push(item));
-            await cart.save();
+            console.log("Full cart", cart)
+            // FIX: Convert cItem._id to string to avoid MongoDB object vs JSON string type mismatch
+            const existingItem = cart.items.find(cItem => cItem._id == item._id);
+
+            if (existingItem) {
+    console.log(`Found existing one`, existingItem._id);
+    // 1. Update the quantity
+    existingItem.quantity += (item.quantity || 1); 
+    
+    // FIX: Tell Mongoose explicitly that the 'items' array was updated
+    cart.markModified('items'); 
+} else {
+    // If it doesn't exist, add the new item to the cart with a fallback quantity
+    cart.items.push({ ...item, quantity: item.quantity || 1 });
+}
+
+// This will now successfully write the new quantity to the database
+await cart.save(); 
+
+            
+            // Single save call for either branch
+            await cart.save(); 
+
         } else {
             // Create a new cart if one doesn't exist
             cart = await Cart.create({
                 user,
-                items
+                items: [
+                    { ...item, quantity: item.quantity || 1 } // FIX: Ensure quantity is saved on cart initialization
+                ]
             });
         }
+        
         return res.status(200).json({
             status: true,
             message: "Added to cart successfully",
@@ -57,6 +79,7 @@ const addToCart = async (req, res) => {
     }
 };
 
+
 const getCart = async (req, res) => {
     const { user } = req.body;
     if (!user || user.trim() === "") {
@@ -67,7 +90,7 @@ const getCart = async (req, res) => {
     }
 
     try {
-        const cartExists = await Cart.findOne({user});
+        const cartExists = await Cart.findOne({ user });
         if (cartExists) {
             return res.status(200).json({
                 status: true,
@@ -93,5 +116,7 @@ const getCart = async (req, res) => {
         });
     }
 }
-
+const updateQuantity = (req, res)=>{
+    
+}
 module.exports = { addToCart, getCart }
