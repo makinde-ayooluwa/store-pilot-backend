@@ -127,24 +127,24 @@ const updateQuantity = async (req, res) => {
             message: "Quantity updated"
         })
     } catch (error) {
-return res.status(400).json({
+        return res.status(400).json({
             status: false,
             message: "Error occured while updating quantity"
         })
     }
 }
-const removeFromCart = async(req, res)=>{
+const removeFromCart = async (req, res) => {
     try {
-        const {user, productId} = req.body;
-        const seen = await Cart.findOne({user});
-        if(seen){
-            const newItems = seen.items.filter((x)=>x._id != productId);
+        const { user, productId } = req.body;
+        const seen = await Cart.findOne({ user });
+        if (seen) {
+            const newItems = seen.items.filter((x) => x._id != productId);
             seen.items = newItems;
             await seen.save();
             return res.status(200).json({
-            status: true,
-            message: "Product removed from cart"
-        })
+                status: true,
+                message: "Product removed from cart"
+            })
         }
     } catch (error) {
         return res.status(400).json({
@@ -153,23 +153,23 @@ const removeFromCart = async(req, res)=>{
         })
     }
 }
-const clearCart = async(req, res)=>{
-const {user} = req.body;
-try {
-    const seen = await Cart.findOne({user});
-    if(seen){
-        seen.items = [];
-        seen.save();
-    }
-    return res.status(200).json({
+const clearCart = async (req, res) => {
+    const { user } = req.body;
+    try {
+        const seen = await Cart.findOne({ user });
+        if (seen) {
+            seen.items = [];
+            seen.save();
+        }
+        return res.status(200).json({
             status: true,
             message: "Cart cleared successfully"
         })
-} catch (error) {
-    return res.status(400).json({
+    } catch (error) {
+        return res.status(400).json({
             status: false,
             message: "Error occured while removing product from cart"
         })
+    }
 }
-}
-module.exports = { addToCart, getCart, updateQuantity, removeFromCart }
+module.exports = { addToCart, getCart, updateQuantity, removeFromCart, clearCart }
