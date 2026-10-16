@@ -118,24 +118,19 @@ const getCart = async (req, res) => {
 }
 const updateQuantity = async (req, res) => {
     try {
-        const {user, productId, quantity } = req.body;
-        const seen = await Cart.findOne({user});
-        if(seen){
-            console.log("User to update cart quantity", seen)
-            console.log("User cart to update", seen.items)
-            console.log("User cart product to update", seen.items.find((x)=>x._id == productId))
-            const prd = seen.items.find((x)=>x._id == productId);
-            if(prd){
-                prd.quantity = quantity;
-            }
-            seen.save();
+        const { user, items } = req.body;
+        const seen = await Cart.findOneAndUpdate({user}, { items });
+        if (seen) {
+            console.log(seen)
+            return res.status(200).json({
+                status: true,
+                message: "Quantity updated"
+            })
         }
 
-        return res.status(200).json({
-            status: true,
-            message: "Quantity updated"
-        })
+
     } catch (error) {
+        console.log("Error now", error)
         return res.status(400).json({
             status: false,
             message: "Error occured while updating quantity"
