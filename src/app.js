@@ -74,6 +74,7 @@ app.use("/cart", cartRouter);
 app.use("/categories", categoryRouter);
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
+    console.log(`Incoming ${req.method} request`, req.url)
 });
 job.start()
 module.exports = app;

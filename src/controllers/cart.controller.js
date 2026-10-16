@@ -118,10 +118,13 @@ const getCart = async (req, res) => {
 }
 const updateQuantity = async (req, res) => {
     try {
-        const { productId, quantity } = req.body;
-        const updated = await Cart.findByIdAndUpdate(productId, {
-            quantity
-        });
+        const {user, productId, quantity } = req.body;
+        const seen = await Cart.findOne({user});
+        if(seen){
+            seen.find((x)=>x._id == productId).quantity = quantity;
+            seen.save();
+        }
+        
         return res.status(200).json({
             status: true,
             message: "Quantity updated"
