@@ -121,7 +121,10 @@ const updateQuantity = async (req, res) => {
         const {user, productId, quantity } = req.body;
         const seen = await Cart.findOne({user});
         if(seen){
-            seen.items.find((x)=>x._id == productId).quantity = quantity;
+            const prd = seen.items.find((x)=>x._id == productId);
+            if(prd){
+                prd.quantity = quantity;
+            }
             seen.save();
         }
 
