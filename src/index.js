@@ -10,6 +10,10 @@ const startServer = () => {
     app.listen(process.env.SERVER_PORT || 8000, () => {
         console.log(`Server listening on port ${process.env.SERVER_PORT || 8000}`);
     })
+    console.log(
+  "Paystack test key loaded:",
+  process.env.PAYSTACK_SECRET_KEY?.startsWith("sk_test_")
+);
 }
 
 startServer();

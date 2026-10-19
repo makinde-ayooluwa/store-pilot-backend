@@ -8,6 +8,7 @@ const storeRouter = require("./routes/store.routes")
 const productRouter = require("./routes/product.routes")
 const cartRouter = require("./routes/cart.routes")
 const categoryRouter = require("./routes/category.routes")
+const paymentRouter = require("./routes/payment.routes")
 const cors = require("cors")
 const job = require("./config/cron")
 app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
@@ -72,6 +73,7 @@ app.use("/store", storeRouter);
 app.use("/products", productRouter);
 app.use("/cart", cartRouter);
 app.use("/categories", categoryRouter);
+app.use("/payment", paymentRouter);
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
     console.log(`Incoming ${req.method} request`, req.url)
