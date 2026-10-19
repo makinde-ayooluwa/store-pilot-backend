@@ -1,3 +1,4 @@
+
 const { Schema, default: mongoose } = require("mongoose");
 
 const productSchema = new Schema({
@@ -20,7 +21,34 @@ const productSchema = new Schema({
     featured: Boolean,
     status: String,
     discount: Number,
-    sales: Number
-}, { timestamps: true })
-const Product = new mongoose.model("products", productSchema)
+    sales: Number,
+
+    // Delivery pricing for this product
+    deliveryPricing: {
+        enabled: {
+            type: Boolean,
+            default: true
+        },
+        rules: [{
+            minQuantity: {
+                type: Number,
+                required: true,
+                min: 1
+            },
+            maxQuantity: {
+                type: Number,
+                default: null
+            },
+            price: {
+                type: Number,
+                required: true,
+                min: 0
+            }
+        }]
+    }
+
+}, { timestamps: true });
+
+const Product = mongoose.model("products", productSchema);
+
 module.exports = Product;

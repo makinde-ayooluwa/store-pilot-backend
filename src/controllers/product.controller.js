@@ -133,6 +133,7 @@ const addProduct = async (req, res) => {
         });
     }
 }
+
 const editProduct = async (req, res) => {
     try {
         const {
@@ -155,30 +156,105 @@ const editProduct = async (req, res) => {
 
         const updateData = {};
 
-        // Only update values that were actually provided
+        // Update only fields provided in the request
         if (name !== undefined) updateData.name = name;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
         if (stock !== undefined) updateData.stock = stock;
-        if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
+        if (lowStockThreshold !== undefined) {
+            updateData.lowStockThreshold = lowStockThreshold;
+        }
         if (slug !== undefined) updateData.slug = slug;
         if (status !== undefined) updateData.status = status;
 
-        // Handle images only when new images were uploaded
+        // Parse and validate delivery pricing
+        if (req.body.deliveryPricing !== undefined) {
+            let deliveryPricing = req.body.deliveryPricing;
+
+            if (typeof deliveryPricing === "string") {
+                try {
+                    deliveryPricing = JSON.parse(deliveryPricing);
+                } catch {
+                    return res.status(400).json({
+                        status: false,
+                        message: "Invalid delivery pricing JSON"
+                    });
+                }
+            }
+
+            if (
+                !deliveryPricing ||
+                typeof deliveryPricing.enabled !== "boolean" ||
+                !Array.isArray(deliveryPricing.rules)
+            ) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Invalid delivery pricing structure"
+                });
+            }
+
+            for (const rule of deliveryPricing.rules) {
+                const min = Number(rule.minQuantity);
+                const max =
+                    rule.maxQuantity === null ||
+                    rule.maxQuantity === "" ||
+                    rule.maxQuantity === undefined
+                        ? null
+                        : Number(rule.maxQuantity);
+                const deliveryPrice = Number(rule.price);
+
+                if (
+                    !Number.isInteger(min) ||
+                    min < 1 ||
+                    (max !== null &&
+                        (!Number.isInteger(max) || max < min)) ||
+                    !Number.isFinite(deliveryPrice) ||
+                    deliveryPrice < 0
+                ) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "Check your delivery quantity ranges and prices"
+                    });
+                }
+
+                rule.minQuantity = min;
+                rule.maxQuantity = max;
+                rule.price = deliveryPrice;
+            }
+
+            // Prevent overlapping quantity ranges
+            const sortedRules = [...deliveryPricing.rules].sort(
+                (a, b) => a.minQuantity - b.minQuantity
+            );
+
+            for (let i = 1; i < sortedRules.length; i++) {
+                const previous = sortedRules[i - 1];
+                const current = sortedRules[i];
+
+                if (
+                    previous.maxQuantity === null ||
+                    current.minQuantity <= previous.maxQuantity
+                ) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "Delivery quantity ranges must not overlap"
+                    });
+                }
+            }
+
+            updateData.deliveryPricing = deliveryPricing;
+        }
+
+        // Handle uploaded images
         const images = req.files || [];
 
         if (images.length > 0) {
-            const imagesToAdd = [];
-
-            images.forEach(({ path }) => {
-                imagesToAdd.push(path);
-            });
+            const imagesToAdd = images.map(({ path }) => path);
 
             updateData.image = imagesToAdd[0];
             updateData.images = imagesToAdd;
         }
 
-        // Don't make a database request if nothing was provided
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
                 status: false,
@@ -206,7 +282,8 @@ const editProduct = async (req, res) => {
             status: true,
             message: "Product edited successfully",
             data: {
-                _id: updated._id
+                _id: updated._id,
+                deliveryPricing: updated.deliveryPricing
             }
         });
 
@@ -215,11 +292,12 @@ const editProduct = async (req, res) => {
 
         return res.status(500).json({
             status: false,
-            message: "Product editing error occured",
-            data: error
+            message: "Product editing error occurred",
+            messageDetails: error.message
         });
     }
 };
+
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.body;

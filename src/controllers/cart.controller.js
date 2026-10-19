@@ -1,17 +1,27 @@
 const Cart = require("../models/cart.model");
+const Product = require("../models/product.model");
 const User = require("../models/user.model")
+
 const addToCart = async (req, res) => {
     try {
         const { user, item } = req.body;
 
-        if (!user || user.trim() === "") {
+        if (!user || typeof user !== "string" || !user.trim()) {
             return res.status(400).json({
                 status: false,
                 message: "User ID is required"
             });
         }
 
+        if (!item?._id) {
+            return res.status(400).json({
+                status: false,
+                message: "A valid product ID is required"
+            });
+        }
+
         const userExists = await User.findById(user);
+
         if (!userExists) {
             return res.status(400).json({
                 status: false,
@@ -19,48 +29,68 @@ const addToCart = async (req, res) => {
             });
         }
 
-        if (!item || !item._id) {
-            return res.status(400).json({
+        // Fetch the actual product from MongoDB
+        const product = await Product.findById(item._id);
+
+        if (!product) {
+            return res.status(404).json({
                 status: false,
-                message: "Cart item and valid item ID are required"
+                message: "Product not found"
             });
         }
 
-        // Check if user already has a cart
+        const quantity = Number(item.quantity ?? 1);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            return res.status(400).json({
+                status: false,
+                message: "Quantity must be a positive integer"
+            });
+        }
+
+        // Use current database product data, including deliveryPricing
+        const productData = product.toObject();
+
         let cart = await Cart.findOne({ user });
 
-        if (cart) {
-            console.log("Full cart", cart)
-            // FIX: Convert cItem._id to string to avoid MongoDB object vs JSON string type mismatch
-            const existingItem = cart.items.find(cItem => cItem._id == item._id);
-
-            if (existingItem) {
-                console.log(`Found existing one`, existingItem._id);
-                // 1. Update the quantity
-                existingItem.quantity += (item.quantity || 1);
-
-                // FIX: Tell Mongoose explicitly that the 'items' array was updated
-                cart.markModified('items');
-            } else {
-                // If it doesn't exist, add the new item to the cart with a fallback quantity
-                cart.items.push({ ...item, quantity: item.quantity || 1 });
-            }
-
-            // This will now successfully write the new quantity to the database
-            await cart.save();
-
-
-            // Single save call for either branch
-            await cart.save();
-
-        } else {
-            // Create a new cart if one doesn't exist
+        if (!cart) {
             cart = await Cart.create({
                 user,
-                items: [
-                    { ...item, quantity: item.quantity || 1 } // FIX: Ensure quantity is saved on cart initialization
-                ]
+                items: [{
+                    ...productData,
+                    quantity
+                }]
             });
+        } else {
+            const existingItem = cart.items.find(
+                cartItem =>
+                    String(cartItem._id) === String(product._id)
+            );
+
+            if (existingItem) {
+                existingItem.quantity =
+                    Number(existingItem.quantity || 0) + quantity;
+
+                // Refresh product details in the existing cart item
+                Object.assign(existingItem, productData);
+                existingItem.quantity =
+                    Number(existingItem.quantity || 0);
+
+                // Preserve the updated quantity explicitly
+                existingItem.quantity =
+                    Number(cart.items.find(
+                        cartItem =>
+                            String(cartItem._id) === String(product._id)
+                    ).quantity);
+            } else {
+                cart.items.push({
+                    ...productData,
+                    quantity
+                });
+            }
+
+            cart.markModified("items");
+            await cart.save();
         }
 
         return res.status(200).json({
@@ -71,6 +101,7 @@ const addToCart = async (req, res) => {
 
     } catch (error) {
         console.error("Add to cart error:", error);
+
         return res.status(500).json({
             status: false,
             message: "An error occurred while adding to cart",
@@ -78,6 +109,7 @@ const addToCart = async (req, res) => {
         });
     }
 };
+
 
 
 const getCart = async (req, res) => {
