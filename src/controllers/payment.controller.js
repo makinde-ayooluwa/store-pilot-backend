@@ -3,11 +3,11 @@ const axios = require("axios");
 
 const initializePayment = async (req, res) => {
   try {
-    const { email, amount } = req.body;
+    const { email, amount, reference = "" } = req.body;
 
     if (!email || !Number.isSafeInteger(amount) || amount <= 0) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "A valid email and positive amount in kobo are required."
       });
     }
@@ -17,8 +17,9 @@ const initializePayment = async (req, res) => {
       {
         email,
         amount: String(amount),
+        reference: reference ?? undefined,
         currency: "NGN",
-        callback_url: `${process.env.FRONTEND_URL}/payment/verify`
+        callback_url: `${process.env.FRONTEND_URL}`
       },
       {
         headers: {
@@ -29,7 +30,7 @@ const initializePayment = async (req, res) => {
     );
 
     return res.status(200).json({
-      success: true,
+      status: true,
       message: "Paystack transaction initialized.",
       authorization_url: response.data.data.authorization_url,
       reference: response.data.data.reference
@@ -41,7 +42,7 @@ const initializePayment = async (req, res) => {
     );
 
     return res.status(502).json({
-      success: false,
+      status: false,
       message: "Unable to initialize payment."
     });
   }
