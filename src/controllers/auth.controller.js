@@ -19,10 +19,10 @@ const register = async (req, res) => {
         }
         const exists = await User.findOne({ email });
         if (exists) {
-            return res.status(500).json({ statusCode: 500, message: "User exists" });
+            return res.status(500).json({ statusCode: 500, message: "Account exists" });
         }
         const newUser = await User.create({ fullname, email, password, role });
-        return res.status(200).json({ statusCode: 200, _id: newUser._id, message: "User registered successfully" });
+        return res.status(200).json({ statusCode: 200, _id: newUser._id, message: "Account created successfully" });
     } catch (error) {
         res.status(500).json({ statusCode: 500, message: "Internal server error occured" })
         console.log(error);
