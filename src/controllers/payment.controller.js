@@ -13,7 +13,7 @@ const initializePayment = async (req, res) => {
     }
 
     const response = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
+      `${process.env.PAYSTACK_URL}/transaction/initialize`,
       {
         email,
         amount: String(amount),
@@ -47,5 +47,7 @@ const initializePayment = async (req, res) => {
     });
   }
 };
+const verifyPayment = async(req, res)=>{
 
+}
 module.exports = { initializePayment };
