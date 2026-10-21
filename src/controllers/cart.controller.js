@@ -58,7 +58,9 @@ const addToCart = async (req, res) => {
                 user,
                 items: [{
                     ...productData,
-                    quantity
+                    quantity,
+                    // deliveryFee: productData
+                    deliveryFee: Number(productData.deliveryPricing.rules.find((x)=>quantity >= x.minQuantity && (quantity <= x.maxQuantity || x.maxQuantity == null || x.maxQuantity == "")).price)
                 }]
             });
         } else {
@@ -85,9 +87,11 @@ const addToCart = async (req, res) => {
             } else {
                 cart.items.push({
                     ...productData,
-                    quantity
+                    quantity,
+                    deliveryFee: Number(productData.deliveryPricing.rules.find((x)=>quantity >= x.minQuantity && (quantity <= x.maxQuantity || x.maxQuantity == null || x.maxQuantity == "")).price)
                 });
             }
+            
 
             cart.markModified("items");
             await cart.save();

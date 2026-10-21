@@ -32,6 +32,7 @@ const createOrder = async (req, res) => {
         let processingFee = 0;
         let deliveryFee = 0;
         for (const item of items) {
+            console.log(item.deliveryFee)
             const product = await Product.findById(item.product);
             if (!product) {
                 return res.status(404).json({
@@ -48,12 +49,8 @@ const createOrder = async (req, res) => {
             //     });
             // }
 
-            if (product.deliveryPricing.enabled && product.deliveryPricing.rules.length > 0) {
-                product.deliveryPricing.rules.map(({ minQuantity, maxQuantity, price }) => {
-                    if (item.quantity >= minQuantity && item.quantity <= maxQuantity) {
-                        deliveryFee += price;
-                    }
-                })
+            if (item.deliveryPricing.enabled && item.deliveryPricing.rules.length > 0) {
+                deliveryFee += item.deliveryFee;
             }
             // Check stock availability
             if (
@@ -68,9 +65,12 @@ const createOrder = async (req, res) => {
             }
 
             // Calculate using the database price, not the frontend price
-            subtotal += product.price * item.quantity;
-            processingFee += subtotal * fee;
-            grandtotal += subtotal + deliveryFee + processingFee;
+            subtotal += (item.unitPrice * item.quantity);
+            processingFee = (subtotal * fee);
+            grandtotal = subtotal + (deliveryFee + processingFee);
+            console.log("SUB TOTAL",subtotal)
+            console.log("PROCESSING TOTAL",processingFee)
+            console.log("GRAND TOTAL",grandtotal)
         }
 
         // Create the order in MongoDB
@@ -84,7 +84,7 @@ const createOrder = async (req, res) => {
             // Temporary placeholders.
             // We will calculate these securely from database
             // product and delivery data before production.
-            subtotal,
+            subtotal: Number(subtotal),
             deliveryFee,
             processingFee,
             total: grandtotal,
@@ -92,7 +92,7 @@ const createOrder = async (req, res) => {
             paymentStatus: "pending",
             status: "pending",
         });
-
+console.log("NEW ORDER", order.processingFee)
         return res.status(201).json({
             status: true,
             message: "Order created successfully",
@@ -105,7 +105,7 @@ const createOrder = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Create order error:", error.message);
+        console.error("Create order error:", error);
 
         return res.status(500).json({
             status: false,
@@ -113,10 +113,10 @@ const createOrder = async (req, res) => {
         });
     }
 };
-const getOrders = async(req, res)=>{
+const getOrders = async (req, res) => {
     try {
-        const {user} = req.body;
-        const orders = await Order.find({user});
+        const { user } = req.body;
+        const orders = await Order.find({ user });
         res.status(200).json(orders);
     } catch (error) {
         res.status(500).json(error)
