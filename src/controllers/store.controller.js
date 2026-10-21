@@ -1,3 +1,4 @@
+const Order = require("../models/order.model");
 const Product = require("../models/product.model");
 const Store = require("../models/store.model");
 const User = require("../models/user.model");
@@ -183,5 +184,21 @@ const updateStore = async (req, res) => {
         });
     }
 };
-
-module.exports = { registerStore, getStore, getAllStore, getProducts, updateStore }
+const getOrders = async(req, res)=>{
+    try {
+        const {store} = req.body;
+        const orders = await Order.find({"items.store": store})
+        console.log(orders)
+        res.status(200).json(
+            orders.map((order)=>{
+                return {
+                    customer: order.customer,
+                    items: order.items
+                }
+            })
+        );
+    } catch (error) {
+        
+    }
+}
+module.exports = { registerStore, getStore, getAllStore, getOrders, getProducts, updateStore }
