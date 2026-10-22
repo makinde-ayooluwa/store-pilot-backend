@@ -188,12 +188,13 @@ const getOrders = async(req, res)=>{
     try {
         const {store} = req.body;
         const orders = await Order.find({"items.store": store})
-        console.log(orders)
         res.status(200).json(
             orders.map((order)=>{
                 return {
                     customer: order.customer,
-                    items: order.items
+                    items: order.items,
+                    orderId: order.orderId,
+                    paymentStatus: order.paymentStatus
                 }
             })
         );

@@ -60,6 +60,11 @@ const orderSchema = new mongoose.Schema(
                     default: 0,
                     min: 0,
                 },
+                total: {
+                    type: Number,
+                    default: 0,
+                    min: 0,
+                },
                 store: {
                     type: String,
                     required: true,

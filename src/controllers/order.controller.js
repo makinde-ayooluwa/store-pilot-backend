@@ -66,7 +66,7 @@ const createOrder = async (req, res) => {
 
             // Calculate using the database price, not the frontend price
             subtotal += (item.unitPrice * item.quantity);
-            processingFee = (subtotal * fee);
+            processingFee = ((subtotal + deliveryFee) * fee);
             grandtotal = subtotal + (deliveryFee + processingFee);
             console.log("SUB TOTAL",subtotal)
             console.log("PROCESSING TOTAL",processingFee)
