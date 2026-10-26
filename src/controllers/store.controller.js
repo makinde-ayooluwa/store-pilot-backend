@@ -155,7 +155,7 @@ const updateStore = async (req, res) => {
 
         const updated = await Store.findByIdAndUpdate(
             _id,
-            updateData ,
+            updateData,
             {
                 new: true,
                 runValidators: true
@@ -184,22 +184,50 @@ const updateStore = async (req, res) => {
         });
     }
 };
-const getOrders = async(req, res)=>{
+const getOrders = async (req, res) => {
     try {
-        const {store} = req.body;
-        const orders = await Order.find({"items.store": store})
-        res.status(200).json(
-            orders.map((order)=>{
-                return {
-                    customer: order.customer,
-                    items: order.items,
-                    orderId: order.orderId,
-                    paymentStatus: order.paymentStatus
-                }
-            })
-        );
-    } catch (error) {
+        const { store } = req.body;
         
+        if (!store || typeof store !== "string") {
+            return res.status(400).json({
+                status: false,
+                message: "Valid store string is required in req.body"
+            });
+        }
+
+        // Clean the store string to remove accidental whitespace
+        const cleanStore = store.trim();
+
+        console.log("Searching for store:", cleanStore);
+
+        // Find all orders where at least one item matches this store string
+        const orders = await Order.find({ "items.store": cleanStore });
+        
+        console.log(`Found ${orders.length} raw orders from DB`);
+
+        const formattedOrders = orders.map((order) => {
+            return {
+                customer: order.customer,
+                items: order.items.filter((x) => x.store && x.store.trim() === cleanStore),
+                orderId: order.orderId,
+                paymentStatus: order.paymentStatus,
+                _id: order._id
+            };
+        });
+
+        return res.status(200).json({
+            status: true,
+            message: "Orders fetched successfully",
+            data: formattedOrders
+        });
+
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Server error",
+            error: error.message
+        });
     }
 }
 module.exports = { registerStore, getStore, getAllStore, getOrders, getProducts, updateStore }
